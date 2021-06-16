@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Near Me Kotlin Demo</string>
+
+    <string name="login_string">Already have an account? <b>Login here</b></string>
+</resources>
