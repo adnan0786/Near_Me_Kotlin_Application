@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/btnHome">
+
+    <fragment
+        android:id="@+id/btnHome"
+        android:name="com.example.nearmekotlindemo.fragment.HomeFragment"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/btnSavedPlaces"
+        android:name="com.example.nearmekotlindemo.fragment.SavedPlaceFragment"
+        tools:layout="@layout/fragment_saved_place" />
+
+    <fragment
+        android:id="@+id/btnSetting"
+        android:name="com.example.nearmekotlindemo.fragment.SettingFragment"
+        tools:layout="@layout/fragment_setting" />
+
+</navigation>
