@@ -114,18 +114,18 @@
         app:fabCustomSize="50dp"
         app:tint="@color/primaryColor" />
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/placesRecyclerView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_alignParentBottom="true"-->
-<!--        android:layout_marginBottom="26dp"-->
-<!--        android:clipToPadding="false"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:paddingLeft="8dp"-->
-<!--        android:paddingRight="8dp"-->
-<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
-<!--        tools:listitem="@layout/place_item_layout" />-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/placesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="26dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/place_item_layout" />
 
 
 </RelativeLayout>
