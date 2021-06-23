@@ -1,5 +1,6 @@
 package com.example.nearmekotlindemo.fragment
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -44,6 +45,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.chip.Chip
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -71,6 +73,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
     private val locationViewModel: LocationViewModel by viewModels<LocationViewModel>()
     private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
     private lateinit var googlePlaceAdapter: GooglePlaceAdapter
+    private var userSavedLocaitonId: ArrayList<String> = ArrayList()
 
 
     override fun onCreateView(
@@ -170,6 +173,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
         }
 
         setUpRecyclerView()
+
+        userSavedLocaitonId = locationViewModel.getUserLocationId()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -367,6 +372,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
                             mGoogleMap?.clear()
 
                             for (i in googleResponseModel.googlePlaceModelList.indices) {
+
+                                googleResponseModel.googlePlaceModelList[i].saved =
+                                    userSavedLocaitonId.contains(googleResponseModel.googlePlaceModelList[i].placeId)
                                 googlePlaceList.add(googleResponseModel.googlePlaceModelList[i])
                                 addMarker(googleResponseModel.googlePlaceModelList[i], i)
                             }
@@ -456,7 +464,99 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
     }
 
     override fun onSaveClick(googlePlaceModel: GooglePlaceModel) {
-        TODO("Not yet implemented")
+        if (userSavedLocaitonId.contains(googlePlaceModel.placeId)) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Remove Place")
+                .setMessage("Are you sure to remove this place?")
+                .setPositiveButton("Yes") { _, _ ->
+                    removePlace(googlePlaceModel)
+                }
+                .setNegativeButton("No") { _, _ -> }
+                .create().show()
+        } else {
+            addPlace(googlePlaceModel)
+
+        }
+    }
+
+    private fun addPlace(googlePlaceModel: GooglePlaceModel) {
+        lifecycleScope.launchWhenStarted {
+            locationViewModel.addUserPlace(googlePlaceModel, userSavedLocaitonId).collect {
+                when (it) {
+                    is State.Loading -> {
+                        if (it.flag == true) {
+                            loadingDialog.startLoading()
+                        }
+                    }
+
+                    is State.Success -> {
+                        loadingDialog.stopLoading()
+                        val placeModel: GooglePlaceModel = it.data as GooglePlaceModel
+                        userSavedLocaitonId.add(placeModel.placeId!!)
+                        val index = googlePlaceList.indexOf(placeModel)
+                        googlePlaceList[index].saved = true
+                        googlePlaceAdapter.notifyDataSetChanged()
+                        Snackbar.make(binding.root, "Saved Successfully", Snackbar.LENGTH_SHORT)
+                            .show()
+
+                    }
+                    is State.Failed -> {
+                        loadingDialog.stopLoading()
+                        Snackbar.make(
+                            binding.root, it.error,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+
+    }
+
+    @SuppressLint("ShowToast")
+    private fun removePlace(googlePlaceModel: GooglePlaceModel) {
+        userSavedLocaitonId.remove(googlePlaceModel.placeId)
+        val index = googlePlaceList.indexOf(googlePlaceModel)
+        googlePlaceList[index].saved = false
+        googlePlaceAdapter.notifyDataSetChanged()
+
+        Snackbar.make(binding.root, "Place removed", Snackbar.LENGTH_LONG)
+            .setAction("Undo") {
+                userSavedLocaitonId.add(googlePlaceModel.placeId!!)
+                googlePlaceList[index].saved = true
+                googlePlaceAdapter.notifyDataSetChanged()
+            }
+            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar?>() {
+                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                    super.onDismissed(transientBottomBar, event)
+                    lifecycleScope.launchWhenStarted {
+                        locationViewModel.removePlace(userSavedLocaitonId).collect {
+                            when (it) {
+                                is State.Loading -> {
+
+                                }
+
+                                is State.Success -> {
+                                    Snackbar.make(
+                                        binding.root,
+                                        it.data.toString(),
+                                        Snackbar.LENGTH_SHORT
+                                    ).show()
+
+                                }
+                                is State.Failed -> {
+                                    Snackbar.make(
+                                        binding.root, it.error,
+                                        Snackbar.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+            .show()
+
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {

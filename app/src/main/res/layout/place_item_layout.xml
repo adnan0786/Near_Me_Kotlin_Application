@@ -75,7 +75,7 @@
                         android:layout_height="30dp"
                         android:layout_alignParentEnd="true"
                         android:onClick="@{()->listener.onSaveClick(googlePlaceModel)}"
-                        android:src="@drawable/ic_bookmark"
+                        android:src="@{googlePlaceModel.saved==true?@drawable/ic_bookmarked:@drawable/ic_bookmark}"
                         app:tint="@color/primaryColor" />
 
                     <ImageView

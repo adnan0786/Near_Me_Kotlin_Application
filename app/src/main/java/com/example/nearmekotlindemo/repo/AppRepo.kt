@@ -2,8 +2,10 @@ package com.example.nearmekotlindemo.repo
 
 import android.net.Uri
 import android.util.Log
+import com.example.nearmekotlindemo.SavedPlaceModel
 import com.example.nearmekotlindemo.UserModel
 import com.example.nearmekotlindemo.constant.AppConstant
+import com.example.nearmekotlindemo.models.googlePlaceModel.GooglePlaceModel
 import com.example.nearmekotlindemo.network.RetrofitClient
 import com.example.nearmekotlindemo.utility.State
 import com.google.firebase.auth.FirebaseAuth
@@ -120,6 +122,67 @@ class AppRepo {
 
     }.catch {
         emit(State.failed(it.message.toString()))
+    }.flowOn(Dispatchers.IO)
+
+    suspend fun getUserLocationId(): ArrayList<String> {
+        val userPlaces = ArrayList<String>()
+        val auth = Firebase.auth
+        val database =
+            Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+
+        val data = database.get().await()
+        if (data.exists()) {
+            for (ds in data.children) {
+                val placeId = ds.getValue(String::class.java)
+                userPlaces.add(placeId!!)
+            }
+        }
+
+        return userPlaces
+    }
+
+    fun addUserPlace(googlePlaceModel: GooglePlaceModel, userSavedLocaitonId: ArrayList<String>) =
+        flow<State<Any>> {
+            emit(State.loading(true))
+            val auth = Firebase.auth
+            val userDatabase =
+                Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+            val database =
+                Firebase.database.getReference("Places").child(googlePlaceModel.placeId!!).get()
+                    .await()
+            if (!database.exists()) {
+                val savedPlaceModel = SavedPlaceModel(
+                    googlePlaceModel.name!!, googlePlaceModel.vicinity!!,
+                    googlePlaceModel.placeId, googlePlaceModel.userRatingsTotal!!,
+                    googlePlaceModel.rating!!, googlePlaceModel.geometry?.location?.lat!!,
+                    googlePlaceModel.geometry.location.lng!!
+                )
+
+                addPlace(savedPlaceModel)
+            }
+
+            userSavedLocaitonId.add(googlePlaceModel.placeId)
+            userDatabase.setValue(userSavedLocaitonId).await()
+            emit(State.success(googlePlaceModel))
+
+
+        }.flowOn(Dispatchers.IO).catch { emit(State.failed(it.message!!)) }
+
+    private suspend fun addPlace(savedPlaceModel: SavedPlaceModel) {
+        val database = Firebase.database.getReference("Places")
+        database.child(savedPlaceModel.placeId).setValue(savedPlaceModel).await()
+    }
+
+    fun removePlace(userSavedLocationId: ArrayList<String>) = flow<State<Any>> {
+        emit(State.loading(true))
+        val auth = Firebase.auth
+        val database =
+            Firebase.database.getReference("Users").child(auth.uid!!).child("Saved Locations")
+
+        database.setValue(userSavedLocationId).await()
+        emit(State.success("Remove Successfully"))
+    }.catch {
+        emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
 }
