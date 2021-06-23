@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.nearmekotlindemo.R
 import com.example.nearmekotlindemo.adapter.GooglePlaceAdapter
+import com.example.nearmekotlindemo.adapter.InfoWindowAdapter
 import com.example.nearmekotlindemo.constant.AppConstant
 import com.example.nearmekotlindemo.databinding.FragmentHomeBinding
 import com.example.nearmekotlindemo.interfaces.NearLocationInterface
@@ -74,6 +75,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
     private lateinit var googlePlaceList: ArrayList<GooglePlaceModel>
     private lateinit var googlePlaceAdapter: GooglePlaceAdapter
     private var userSavedLocaitonId: ArrayList<String> = ArrayList()
+    private var infoWindowAdapter: InfoWindowAdapter? = null
 
 
     override fun onCreateView(
@@ -300,6 +302,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
         fusedLocationProviderClient.lastLocation.addOnSuccessListener {
 
             currentLocation = it
+            infoWindowAdapter = null
+            infoWindowAdapter = InfoWindowAdapter(currentLocation, requireContext())
+            mGoogleMap?.setInfoWindowAdapter(infoWindowAdapter)
             moveCameraToLocation(currentLocation)
         }
     }
