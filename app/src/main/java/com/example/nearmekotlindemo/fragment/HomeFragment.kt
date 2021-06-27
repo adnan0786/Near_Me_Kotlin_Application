@@ -2,6 +2,7 @@ package com.example.nearmekotlindemo.fragment
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import com.example.nearmekotlindemo.R
+import com.example.nearmekotlindemo.activities.DirectionActivity
 import com.example.nearmekotlindemo.adapter.GooglePlaceAdapter
 import com.example.nearmekotlindemo.adapter.InfoWindowAdapter
 import com.example.nearmekotlindemo.constant.AppConstant
@@ -306,6 +308,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
             infoWindowAdapter = InfoWindowAdapter(currentLocation, requireContext())
             mGoogleMap?.setInfoWindowAdapter(infoWindowAdapter)
             moveCameraToLocation(currentLocation)
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "${it.toString()}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -565,7 +569,15 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
     }
 
     override fun onDirectionClick(googlePlaceModel: GooglePlaceModel) {
-        TODO("Not yet implemented")
+        val placeId = googlePlaceModel.placeId
+        val lat = googlePlaceModel.geometry?.location?.lat
+        val lng = googlePlaceModel.geometry?.location?.lng
+        val intent = Intent(requireContext(), DirectionActivity::class.java)
+        intent.putExtra("placeId", placeId)
+        intent.putExtra("lat", lat)
+        intent.putExtra("lng", lng)
+
+        startActivity(intent)
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {

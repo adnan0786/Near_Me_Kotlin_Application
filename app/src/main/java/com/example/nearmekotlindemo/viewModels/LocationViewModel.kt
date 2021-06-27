@@ -27,4 +27,6 @@ class LocationViewModel : ViewModel() {
 
         return data
     }
+
+    fun getDirection(url: String) = repo.getDirection(url)
 }

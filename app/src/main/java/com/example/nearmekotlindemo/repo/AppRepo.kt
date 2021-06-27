@@ -185,4 +185,24 @@ class AppRepo {
         emit(State.failed(it.message!!))
     }.flowOn(Dispatchers.IO)
 
+    fun getDirection(url: String): Flow<State<Any>> = flow<State<Any>> {
+        emit(State.loading(true))
+
+        val response = RetrofitClient.retrofitApi.getDirection(url)
+
+        if (response.body()?.directionRouteModels?.size!! > 0) {
+            emit(State.success(response.body()!!))
+        } else {
+            emit(State.failed(response.body()?.error!!))
+        }
+    }.flowOn(Dispatchers.IO)
+        .catch { it ->
+            if (it.message.isNullOrEmpty()) {
+                emit(State.failed("No route found"))
+            } else {
+                emit(State.failed(it.message.toString()))
+            }
+
+        }
+
 }

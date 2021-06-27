@@ -12,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NearMeKotlinDemo">
+        <activity
+            android:name=".activities.DirectionActivity"
+            android:theme="@style/ActionBarTheme" />
         <activity android:name=".activities.ForgetActivity" />
         <activity android:name=".activities.SignUpActivity" />
         <activity android:name=".activities.LoginActivity" />
@@ -32,8 +35,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/API_KEY"/>
-
+            android:value="@string/API_KEY" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
