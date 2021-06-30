@@ -244,7 +244,7 @@ class AppRepo {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    
+
                 }
 
             }
