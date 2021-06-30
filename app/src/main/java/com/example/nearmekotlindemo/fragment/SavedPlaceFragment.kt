@@ -1,60 +1,110 @@
 package com.example.nearmekotlindemo.fragment
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import com.example.nearmekotlindemo.R
+import com.example.nearmekotlindemo.SavedPlaceModel
+import com.example.nearmekotlindemo.activities.DirectionActivity
+import com.example.nearmekotlindemo.adapter.SavedPlaceAdapter
+import com.example.nearmekotlindemo.databinding.FragmentSavedPlaceBinding
+import com.example.nearmekotlindemo.interfaces.SaveLocationInterface
+import com.example.nearmekotlindemo.models.googlePlaceModel.GoogleResponseModel
+import com.example.nearmekotlindemo.utility.LoadingDialog
+import com.example.nearmekotlindemo.utility.State
+import com.example.nearmekotlindemo.viewModels.LocationViewModel
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collect
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class SavedPlaceFragment : Fragment(), SaveLocationInterface {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SavedPlaceFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class SavedPlaceFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentSavedPlaceBinding
+    private lateinit var savedPlaceModelList: ArrayList<SavedPlaceModel>
+    private lateinit var loadingDialog: LoadingDialog
+    private val locationViewModel: LocationViewModel by viewModels()
+    private lateinit var placeAdapter: SavedPlaceAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_saved_place, container, false)
+    ): View {
+        binding = FragmentSavedPlaceBinding.inflate(inflater, container, false)
+
+        savedPlaceModelList = ArrayList()
+        loadingDialog = LoadingDialog(requireActivity())
+        placeAdapter = SavedPlaceAdapter(this)
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SavedPlaceFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SavedPlaceFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        (activity as AppCompatActivity?)!!.supportActionBar!!.title = "Saved Places"
+        binding.savedRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(false)
+            adapter = placeAdapter
+        }
+
+        getSavedPlaces()
+
+    }
+
+    override fun onLocationClick(savedPlaceModel: SavedPlaceModel) {
+        val intent = Intent(requireContext(), DirectionActivity::class.java)
+        intent.putExtra("placeId", savedPlaceModel.placeId)
+        intent.putExtra("lat", savedPlaceModel.lat)
+        intent.putExtra("lng", savedPlaceModel.lng)
+
+        startActivity(intent)
+    }
+
+    private fun getSavedPlaces() {
+        lifecycleScope.launchWhenStarted {
+            locationViewModel.getUserLocations().collect {
+                when (it) {
+                    is State.Loading -> {
+                        if (it.flag == true) {
+                            Log.d("TAG", "getSavedPlaces: called")
+                            loadingDialog.startLoading()
+                        }
+                    }
+
+                    is State.Success -> {
+                        loadingDialog.stopLoading()
+                        savedPlaceModelList = it.data as ArrayList<SavedPlaceModel>
+                        Toast.makeText(
+                            requireContext(),
+                            "${savedPlaceModelList.size}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        placeAdapter.submitList(savedPlaceModelList)
+
+                    }
+                    is State.Failed -> {
+                        loadingDialog.stopLoading()
+                        Snackbar.make(
+                            binding.root, it.error,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
+        }
     }
+
+
 }

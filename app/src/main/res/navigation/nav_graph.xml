@@ -18,6 +18,37 @@
     <fragment
         android:id="@+id/btnSetting"
         android:name="com.example.nearmekotlindemo.fragment.SettingFragment"
-        tools:layout="@layout/fragment_setting" />
+        tools:layout="@layout/fragment_setting">
+
+        <action
+            android:id="@+id/action_btnSetting_to_emailConfirmationFragment"
+            app:destination="@id/emailConfirmationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/emailChangeFragment"
+        android:name="com.example.nearmekotlindemo.fragment.EmailChangeFragment"
+        android:label="New Email"
+        tools:layout="@layout/fragment_email_change" />
+    <fragment
+        android:id="@+id/emailConfirmationFragment"
+        android:name="com.example.nearmekotlindemo.fragment.EmailConfirmationFragment"
+        android:label="fragment_email_confirmation"
+        tools:layout="@layout/fragment_email_confirmation">
+        <argument
+            android:name="isPassword"
+            android:defaultValue="false"
+            app:argType="boolean" />
+        <action
+            android:id="@+id/action_emailConfirmationFragment_to_passwordChangeFragment"
+            app:destination="@id/passwordChangeFragment" />
+        <action
+            android:id="@+id/action_emailConfirmationFragment_to_emailChangeFragment"
+            app:destination="@id/emailChangeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/passwordChangeFragment"
+        android:name="com.example.nearmekotlindemo.fragment.PasswordChangeFragment"
+        android:label="New Password"
+        tools:layout="@layout/fragment_password_change" />
 
 </navigation>

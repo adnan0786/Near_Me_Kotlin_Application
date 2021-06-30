@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AbsListView
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -178,7 +177,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
 
         setUpRecyclerView()
 
-        userSavedLocaitonId = locationViewModel.getUserLocationId()
+        lifecycleScope.launchWhenStarted {
+            userSavedLocaitonId = locationViewModel.getUserLocationId()
+            Log.d("TAG", "onViewCreated: ${userSavedLocaitonId.size}")
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -309,7 +311,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, NearLocationInterface,
             mGoogleMap?.setInfoWindowAdapter(infoWindowAdapter)
             moveCameraToLocation(currentLocation)
         }.addOnFailureListener {
-            Toast.makeText(requireContext(), "${it.toString()}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "$it", Toast.LENGTH_SHORT).show()
         }
     }
 

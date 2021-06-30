@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     tools:context=".fragment.SavedPlaceFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Saved Place"
-        android:textSize="40dp" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/savedRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        tools:listitem="@layout/saved_item_layout" />
 
 </RelativeLayout>
